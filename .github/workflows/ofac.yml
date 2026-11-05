@@ -1,0 +1,27 @@
+name: ofac-copy
+on:
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  copy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download the official OFAC files
+        run: |
+          set -euo pipefail
+          mkdir -p ofac
+          for f in sdn alt add; do curl -fsSL --retry 5 --retry-delay 20 -o ofac/$f.csv "https://www.treasury.gov/ofac/downloads/$f.csv"; done
+          for f in cons_prim cons_alt cons_add; do curl -fsSL --retry 5 --retry-delay 20 -o ofac/$f.csv "https://www.treasury.gov/ofac/downloads/consolidated/$f.csv"; done
+          test $(wc -l < ofac/sdn.csv) -gt 5000
+          date -u +%Y-%m-%dT%H:%M:%SZ > ofac/fetched_at.txt
+      - name: Commit
+        run: |
+          git config user.name "ukdata-bot"
+          git config user.email "hello@reliness.co.uk"
+          git add ofac
+          git commit -m "OFAC copy $(cat ofac/fetched_at.txt)" || echo "no change"
+          git push
