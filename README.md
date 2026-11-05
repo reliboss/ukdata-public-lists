@@ -1,2 +1,3 @@
-# ukdata-public-lists
-Nightly copy of the official US OFAC sanctions files (public data from treasury.gov), used by UK Data for Agents.
+# Public sanctions list copies
+
+A nightly GitHub Action downloads the official US Treasury OFAC SDN and Consolidated (non-SDN) files from treasury.gov into `ofac/`, unchanged. Public data, published by the US Government.
